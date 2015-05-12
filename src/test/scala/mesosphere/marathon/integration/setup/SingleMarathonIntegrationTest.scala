@@ -60,7 +60,7 @@ trait SingleMarathonIntegrationTest
       log.info("Setting up local mesos/marathon infrastructure...")
 
       ProcessKeeper.startZooKeeper(config.zkPort, "/tmp/foo")
-      ProcessKeeper.startMesosLocal()
+//      ProcessKeeper.startMesosLocal()
       cleanMarathonState()
 
       startMarathon(config.marathonPort, "--master", config.master, "--event_subscriber", "http_callback")
