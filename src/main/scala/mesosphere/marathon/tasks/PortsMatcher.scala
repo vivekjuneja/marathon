@@ -78,8 +78,8 @@ class PortsMatcher(
     */
   private[this] def findPortsInOffer(requiredPorts: Seq[Integer], failLog: Boolean): Option[Seq[PortWithRole]] = {
     takeEnoughPortsOrNone(expectedSize = requiredPorts.size) {
-      requiredPorts.sorted.iterator.map { (port: Integer) =>
-        offeredPortRanges.find(_.contains(port)).map { offeredRange =>
+      requiredPorts.sorted.iterator.map { port =>
+        offeredPortRanges.find(_.range.contains(port)).map { offeredRange =>
           PortWithRole(offeredRange.role, port)
         } orElse {
           if (failLog) log.info(s"Couldn't find host port $port in any offered range for app [${app.id}]")
@@ -124,7 +124,7 @@ class PortsMatcher(
             Option(availablePortsWithoutStaticHostPorts.next())
           }
         case pm: PortMapping =>
-          offeredPortRanges.find(_.contains(pm.hostPort)) match {
+          offeredPortRanges.find(_.range.contains(pm.hostPort)) match {
             case Some(PortRange(role, _)) =>
               Some(PortWithRole(role, pm.hostPort))
             case None =>
@@ -271,7 +271,6 @@ object PortsMatcher {
   case class PortRange(role: String, range: Range) {
     lazy val protoRange: protos.Range = protos.Range(range.start.toLong, range.end.toLong)
 
-    def contains(port: Int): Boolean = range.head <= port && port <= range.last
     def portsWithRolesIterator: Iterator[PortWithRole] = range.iterator.map(PortWithRole(role, _))
     def firstNPorts(n: Int): Iterator[PortWithRole] = range.take(n).iterator.map(PortWithRole(role, _))
     def withoutNPorts(n: Int): Iterator[PortWithRole] = range.drop(n).iterator.map(PortWithRole(role, _))
