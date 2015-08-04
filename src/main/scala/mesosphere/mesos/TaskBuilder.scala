@@ -44,10 +44,6 @@ class TaskBuilder(app: AppDefinition,
         diskRole = disk
         portsResource = ranges
       case _ =>
-        log.info(
-          s"No matching offer for ${app.id} (need cpus=${app.cpus}, mem=${app.mem}, " +
-            s"disk=${app.disk}, ports=${app.hostPorts}) : " + offer
-        )
         return None
     }
 
@@ -177,6 +173,21 @@ class TaskBuilder(app: AppDefinition,
     // For this reason, we should reject on empty disk role only if this app
     // requires a positive amount of disk.
     if (cpuRole.isEmpty || memRole.isEmpty || diskRole.isEmpty && app.disk > 0.0) {
+      def scalarMatchString(roleString: String): String = {
+        if (roleString.isEmpty) {
+          "NO match"
+        }
+        else {
+          s"matched $roleString"
+        }
+      }
+
+      log.info(
+        s"Insufficient resources for ${app.id}, " +
+          s"cpus=${app.cpus} ${scalarMatchString(cpuRole)}, " +
+          s"mem=${app.mem} ${scalarMatchString(memRole)}, " +
+          s"disk=${app.disk} ${scalarMatchString(diskRole)}:\n" + offer
+      )
       return None
     }
 
@@ -189,7 +200,16 @@ class TaskBuilder(app: AppDefinition,
 
     portMatcher.portRanges match {
       case None =>
-        log.warn("App ports are not available in the offer.")
+        def portsRequiredString: String = {
+          if (app.requirePorts) {
+            "ports required =" + app.ports.mkString(", ")
+          }
+          else {
+            s"need ${app.ports.size} ports"
+          }
+        }
+
+        log.warn(s"App ports are not available in the offer. $portsRequiredString")
         None
 
       case _ if badConstraints.nonEmpty =>
