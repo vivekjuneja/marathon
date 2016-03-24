@@ -154,7 +154,8 @@ object MarathonBuild extends Build {
         "jsp-api-2.1.jar"
       )
       cp filter { x => exclude(x.data.getName) }
-    }
+    },
+    test in assembly := {}
   )
 
   lazy val formatSettings = scalariformSettings ++ Seq(
