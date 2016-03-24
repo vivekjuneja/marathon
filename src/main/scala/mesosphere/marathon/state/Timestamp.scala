@@ -29,9 +29,9 @@ abstract case class Timestamp private (private val utcDateTime: DateTime) extend
 object Timestamp {
   /**
     * Returns a new Timestamp representing the instant that is the supplied
-    * dateTime converted to UTC.
+    * dateTime converted to UTC if os timezone is not set
     */
-  def apply(dateTime: DateTime): Timestamp = new Timestamp(dateTime.toDateTime(DateTimeZone.UTC)) {}
+  def apply(dateTime: DateTime): Timestamp = new Timestamp(dateTime.toDateTime(DateTimeZone.getDefault())) {}
 
   /**
     * Returns a new Timestamp representing the instant that is the supplied
